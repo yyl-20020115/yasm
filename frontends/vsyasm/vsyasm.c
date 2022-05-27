@@ -511,14 +511,39 @@ do_assemble(const char *in_filename)
     return EXIT_SUCCESS;
 }
 
+char* yasm__compact_path(char* path, int win) {
+    if (path != 0)
+    {
+        char* p = path;
+        char* q = p;
+
+        while (*p != '\0') {
+            if (win) {
+                while (*p == '\\' && (*(p + 1) == '\\')) {
+                    p++;
+                }
+            }
+            else {
+                while (*p == '//' && (*(p + 1) == '//')) {
+                    p++;
+                }
+            }
+            *q = *p;
+            q++;
+            p++;
+        }
+        *q = '\0';
+    }
+    return path;
+}
 /* main function */
 /*@-globstate -unrecog@*/
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
     size_t i;
-    constcharparam *infile;
-
+    constcharparam* infile;
+    
     errfile = stderr;
 
 #if defined(HAVE_SETLOCALE) && defined(HAVE_LC_MESSAGES)
@@ -680,25 +705,44 @@ main(int argc, char *argv[])
         }
     }
 
+    yasm__compact_path(objdir_pathname, _WIN32);
     /* If not already specified, output to the current directory. */
     if (!objdir_pathname)
         objdir_pathname = yasm__xstrdup("./");
     else if ((i = yasm__createpath(objdir_pathname)) > 0 &&
              num_input_files > 1) {
-        objdir_pathname[i] = '/';
-        objdir_pathname[i+1] = '\0';
+        if (((int)i) < 0) {
+            objdir_pathname[0] = '\0';
+        }
+        else
+        {
+            objdir_pathname[i] = '/';
+            objdir_pathname[i + 1] = '\0';
+        }
     }
 
+    yasm__compact_path(listdir_pathname, _WIN32);
     /* Create other output directories if necessary */
     if (listdir_pathname && (i = yasm__createpath(listdir_pathname)) > 0 &&
         num_input_files > 1) {
-        listdir_pathname[i] = '/';
-        listdir_pathname[i+1] = '\0';
+        if (((int)i) < 0) {
+            listdir_pathname[0] = '\0';
+        }
+        else {
+            listdir_pathname[i] = '/';
+            listdir_pathname[i + 1] = '\0';
+        }
     }
+    yasm__compact_path(mapdir_pathname, _WIN32);
     if (mapdir_pathname && (i = yasm__createpath(mapdir_pathname)) > 0 &&
         num_input_files > 1) {
-        mapdir_pathname[i] = '/';
-        mapdir_pathname[i+1] = '\0';
+        if (((int)i) < 0) {
+            mapdir_pathname[0] = '\0';
+        }
+        else {
+            mapdir_pathname[i] = '/';
+            mapdir_pathname[i + 1] = '\0';
+        }
     }
 
     /* If not already specified, set file extensions */
