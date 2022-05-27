@@ -528,7 +528,9 @@ char* yasm__compact_path(char* path, int win) {
                     p++;
                 }
             }
-            *q = *p;
+            if (p != q) {
+                *q = *p;
+            }
             q++;
             p++;
         }
