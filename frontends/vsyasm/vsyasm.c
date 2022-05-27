@@ -706,8 +706,11 @@ main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
     }
-
-    yasm__compact_path(objdir_pathname, _WIN32);
+#ifdef _WIN32
+    yasm__compact_path(objdir_pathname, 1);
+#else
+    yasm__compact_path(objdir_pathname, 0);
+#endif
     /* If not already specified, output to the current directory. */
     if (!objdir_pathname)
         objdir_pathname = yasm__xstrdup("./");
@@ -722,8 +725,11 @@ main(int argc, char* argv[])
             objdir_pathname[i + 1] = '\0';
         }
     }
-
-    yasm__compact_path(listdir_pathname, _WIN32);
+#ifdef _WIN32
+    yasm__compact_path(listdir_pathname, 1);
+#else
+    yasm__compact_path(listdir_pathname, 0);
+#endif
     /* Create other output directories if necessary */
     if (listdir_pathname && (i = yasm__createpath(listdir_pathname)) > 0 &&
         num_input_files > 1) {
@@ -735,7 +741,11 @@ main(int argc, char* argv[])
             listdir_pathname[i + 1] = '\0';
         }
     }
-    yasm__compact_path(mapdir_pathname, _WIN32);
+#ifdef _WIN32
+    yasm__compact_path(mapdir_pathname, 1);
+#else
+    yasm__compact_path(mapdir_pathname, 0);
+#endif
     if (mapdir_pathname && (i = yasm__createpath(mapdir_pathname)) > 0 &&
         num_input_files > 1) {
         if (((int)i) < 0) {
