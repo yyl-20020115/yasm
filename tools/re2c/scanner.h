@@ -23,7 +23,7 @@ static SubStr
 Scanner_token(Scanner *s)
 {
     SubStr r;
-    SubStr_init_u(&r, s->tok, s->cur - s->tok);
+    SubStr_init_u(&r, s->tok,(unsigned int)(s->cur - s->tok));
     return r;
 }
 

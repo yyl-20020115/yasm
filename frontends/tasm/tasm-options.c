@@ -38,6 +38,7 @@
 #else
 #define DEBUG(x)
 #endif
+extern int dump_yaml_debug;
 
 
 /* Options Parser */
@@ -54,6 +55,10 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
   fail:
     while (--argc) {
         argv++;
+        //NOTICE: changed for yaml
+        if (strlen(argv[0]) > 0 && argv[0][0] == '-' && argv[0][1] == 'k') {
+            dump_yaml_debug = 1;
+        }
 
         if (argv[0][0] == '/' && argv[0][1]) {        /* opt */
             got_it = 0;

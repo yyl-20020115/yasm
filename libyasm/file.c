@@ -250,7 +250,7 @@ yasm__getcwd(void)
         return buf;
     }
 
-    while (getcwd(buf, size-1) == NULL) {
+    while (getcwd(buf, (int)(size-1)) == NULL) {
         if (errno != ERANGE) {
             yasm__fatal(N_("could not determine current working directory"));
             yasm_xfree(buf);

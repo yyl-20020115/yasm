@@ -110,7 +110,7 @@ void Go_unmap(Go *g, Go *base, State *x){
 	}
     }
     s->ub = e[-1].ub; ++s;
-    g->nSpans = s - g->span;
+    g->nSpans = (unsigned int)(s - g->span);
 }
 
 static void doGen(Go *g, State *s, unsigned char *bm, unsigned char m){
@@ -606,7 +606,7 @@ static unsigned int merge(Span *x0, State *fg, State *bg){
 	    x->ub = f->ub;
 	    ++x; ++f; --nf; ++b; --nb;
 	    if(nf == 0 && nb == 0)
-		return x - x0;
+		return (unsigned int)(x - x0);
 	}
 	while(f->ub < b->ub){
 	    to = f->to == b->to? bg : f->to;
@@ -671,7 +671,7 @@ static void SCC_traverse(SCC *s, State *x){
     unsigned int k, i;
 
     *s->top = x;
-    k = ++s->top - s->stk;
+    k = (unsigned int)( ++s->top - s->stk);
     x->depth = k;
     for(i = 0; i < x->go.nSpans; ++i){
 	State *y = x->go.span[i].to;

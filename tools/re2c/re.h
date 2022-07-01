@@ -40,7 +40,7 @@ Range_init(Range *r, unsigned int l, unsigned int u)
 static Range *
 Range_new(unsigned int l, unsigned int u)
 {
-    Range *r = malloc(sizeof(Range));
+    Range *r = (Range*)malloc(sizeof(Range));
     r->next = NULL;
     r->lb = l;
     r->ub = u;
@@ -58,7 +58,7 @@ Range_copy(Range *ro, const Range *r)
 static Range *
 Range_new_copy(Range *r)
 {
-    Range *ro = malloc(sizeof(Range));
+    Range *ro = (Range*)malloc(sizeof(Range));
     ro->next = NULL;
     ro->lb = r->lb;
     ro->ub = r->ub;
@@ -122,7 +122,7 @@ void RegExp_display(RegExp*, FILE *);
 static RegExp *
 RegExp_new_NullOp(void)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = NULLOP;
     return r;
 }
@@ -130,7 +130,7 @@ RegExp_new_NullOp(void)
 static RegExp *
 RegExp_new_MatchOp(Range *m)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = MATCHOP;
     r->d.match = m;
     return r;
@@ -141,7 +141,7 @@ RegExp *RegExp_new_RuleOp(RegExp*, RegExp*, Token*, unsigned int);
 static RegExp *
 RegExp_new_AltOp(RegExp *e1, RegExp *e2)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = ALTOP;
     r->d.AltCatOp.exp1 = e1;
     r->d.AltCatOp.exp2 = e2;
@@ -151,7 +151,7 @@ RegExp_new_AltOp(RegExp *e1, RegExp *e2)
 static RegExp *
 RegExp_new_CatOp(RegExp *e1, RegExp *e2)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = CATOP;
     r->d.AltCatOp.exp1 = e1;
     r->d.AltCatOp.exp2 = e2;
@@ -161,7 +161,7 @@ RegExp_new_CatOp(RegExp *e1, RegExp *e2)
 static RegExp *
 RegExp_new_CloseOp(RegExp *e)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = CLOSEOP;
     r->d.exp = e;
     return r;
@@ -170,7 +170,7 @@ RegExp_new_CloseOp(RegExp *e)
 static RegExp *
 RegExp_new_CloseVOp(RegExp *e, int lb, int ub)
 {
-    RegExp *r = malloc(sizeof(RegExp));
+    RegExp *r = (RegExp*)malloc(sizeof(RegExp));
     r->type = CLOSEVOP;
     r->d.CloseVOp.exp = e;
     r->d.CloseVOp.min = lb;

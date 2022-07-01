@@ -51,33 +51,6 @@
 #include "inttree.h"
 
 
-struct yasm_section {
-    /*@reldef@*/ STAILQ_ENTRY(yasm_section) link;
-
-    /*@dependent@*/ yasm_object *object;    /* Pointer to parent object */
-
-    /*@owned@*/ char *name;     /* strdup()'ed name (given by user) */
-
-    /* associated data; NULL if none */
-    /*@null@*/ /*@only@*/ yasm__assoc_data *assoc_data;
-
-    unsigned long align;        /* Section alignment */
-
-    unsigned long opt_flags;    /* storage for optimizer flags */
-
-    int code;                   /* section contains code (instructions) */
-    int res_only;               /* allow only resb family of bytecodes? */
-    int def;                    /* "default" section, e.g. not specified by
-                                   using section directive */
-
-    /* the bytecodes for the section's contents */
-    /*@reldef@*/ STAILQ_HEAD(yasm_bytecodehead, yasm_bytecode) bcs;
-
-    /* the relocations for the section */
-    /*@reldef@*/ STAILQ_HEAD(yasm_relochead, yasm_reloc) relocs;
-
-    void (*destroy_reloc) (/*@only@*/ void *reloc);
-};
 
 static void yasm_section_destroy(/*@only@*/ yasm_section *sect);
 

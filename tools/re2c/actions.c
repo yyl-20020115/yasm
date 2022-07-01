@@ -568,7 +568,7 @@ RegExp *invToRE(SubStr s)
     s.len--;
     s.str++;
 
-    ss = SubStr_new("[\\000-\\377]", strlen("[\\000-\\377]"));
+    ss = SubStr_new("[\\000-\\377]", (unsigned int)strlen("[\\000-\\377]"));
     any = ranToRE(*ss);
     free(ss);
     if (s.len <= 2)
@@ -585,7 +585,7 @@ RegExp *invToRE(SubStr s)
 
 RegExp *mkDot()
 {
-    SubStr *ss = SubStr_new("[\\000-\\377]", strlen("[\\000-\\377]"));
+    SubStr *ss = SubStr_new("[\\000-\\377]", (unsigned int)strlen("[\\000-\\377]"));
     RegExp * any = ranToRE(*ss);
     RegExp * ran = matchChar('\n');
     RegExp * inv = mkDiff(any, ran);
@@ -679,7 +679,7 @@ void genCode(FILE *o, RegExp *re){
     for(j = 0; j < re->size;){
 	unmark(&ins[j]);
 	if(ins[j].i.tag == CHAR){
-	    j = (Ins*) ins[j].i.link - ins;
+	    j = (unsigned int)((Ins*) ins[j].i.link - ins);
 	} else {
 	    j++;
 	}

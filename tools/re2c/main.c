@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
 	    return 1;
 	}
 
-	len = strlen(outputFileName);
+	len = (int)strlen(outputFileName);
 	tmp = (char*)malloc((len+1)*2);
 
 	for (src = outputFileName, dst = tmp; *src; ++src)

@@ -114,30 +114,6 @@ typedef struct cv8_fileinfo {
     const cv_filename *fn;
 } cv8_fileinfo;
 
-/* Note: each line number group is associated with a file AND a section */
-typedef struct cv8_linepair {
-    unsigned long offset;
-    unsigned long line;
-} cv8_linepair;
-
-/* Decrease linked list overhead a bit doing it this way */
-typedef struct cv8_lineset {
-    STAILQ_ENTRY(cv8_lineset) link;
-    cv8_linepair pairs[126];
-    size_t num_pairs;
-} cv8_lineset;
-
-/* Note: Due to line number sorting requirements (by section offset it seems)
- *       one file may need more than one record per section. */
-typedef struct cv8_lineinfo {
-    STAILQ_ENTRY(cv8_lineinfo) link;
-    const cv_filename *fn;      /* filename associated with line numbers */
-    yasm_section *sect;         /* section line numbers are for */
-    yasm_symrec *sectsym;       /* symbol for beginning of sect */
-    unsigned long num_linenums;
-    int first_in_sect;          /* First lineinfo for this section. */
-    STAILQ_HEAD(cv8_lineset_head, cv8_lineset) linesets;
-} cv8_lineinfo;
 
 /* Symbols use a bit of meta-programming to encode formats: each character
  * of format represents the output generated, as follows:
@@ -414,17 +390,6 @@ cv_append_str(yasm_section *sect, const char *str)
     return bc;
 }
 
-typedef struct cv_line_info {
-    yasm_section *debug_symline;
-    yasm_object *object;
-    yasm_dbgfmt_cv *dbgfmt_cv;
-    yasm_linemap *linemap;
-    yasm_errwarns *errwarns;
-    unsigned int num_lineinfos;
-    STAILQ_HEAD(cv8_lineinfo_head, cv8_lineinfo) cv8_lineinfos;
-    /*@null@*/ cv8_lineinfo *cv8_cur_li;
-    /*@null@*/ cv8_lineset *cv8_cur_ls;
-} cv_line_info;
 
 static int
 cv_generate_line_bc(yasm_bytecode *bc, /*@null@*/ void *d)
@@ -489,7 +454,13 @@ cv_generate_line_bc(yasm_bytecode *bc, /*@null@*/ void *d)
         0x80000000 | line;
     info->cv8_cur_ls->num_pairs++;
     info->cv8_cur_li->num_linenums++;
-
+    //bc->offset
+    //line
+    // filename
+    //info->cv8_cur_li->fn->pathname;
+    //
+    //info->cv8_cur_li->sect
+    //info->cv8_cur_li->first_in_sect
     return 0;
 }
 
@@ -541,10 +512,10 @@ cv_generate_sym(yasm_symrec *sym, void *d)
 
 yasm_section *
 yasm_cv__generate_symline(yasm_object *object, yasm_linemap *linemap,
-                          yasm_errwarns *errwarns)
+                          yasm_errwarns *errwarns, cv_line_info* info)
 {
     yasm_dbgfmt_cv *dbgfmt_cv = (yasm_dbgfmt_cv *)object->dbgfmt;
-    cv_line_info info;
+    ;
     int new;
     size_t i;
     cv8_symhead *head;
@@ -556,20 +527,20 @@ yasm_cv__generate_symline(yasm_object *object, yasm_linemap *linemap,
     yasm_linemap_traverse_filenames(linemap, dbgfmt_cv,
                                     cv_generate_filename);
 
-    info.object = object;
-    info.dbgfmt_cv = dbgfmt_cv;
-    info.linemap = linemap;
-    info.errwarns = errwarns;
-    info.debug_symline =
+    info->object = object;
+    info->dbgfmt_cv = dbgfmt_cv;
+    info->linemap = linemap;
+    info->errwarns = errwarns;
+    info->debug_symline =
         yasm_object_get_general(object, ".debug$S", 1, 0, 0, &new, 0);
-    info.num_lineinfos = 0;
-    STAILQ_INIT(&info.cv8_lineinfos);
-    info.cv8_cur_li = NULL;
-    info.cv8_cur_ls = NULL;
+    info->num_lineinfos = 0;
+    STAILQ_INIT(&info->cv8_lineinfos);
+    info->cv8_cur_li = NULL;
+    info->cv8_cur_ls = NULL;
 
     /* source filenames string table */
-    head = cv8_add_symhead(info.debug_symline, CV8_FILE_STRTAB, 1);
-    cv_append_str(info.debug_symline, "");
+    head = cv8_add_symhead(info->debug_symline, CV8_FILE_STRTAB, 1);
+    cv_append_str(info->debug_symline, "");
     off = 1;
     for (i=0; i<dbgfmt_cv->filenames_size; i++) {
         if (!dbgfmt_cv->filenames[i].pathname) {
@@ -578,78 +549,78 @@ yasm_cv__generate_symline(yasm_object *object, yasm_linemap *linemap,
             yasm_errwarn_propagate(errwarns, 0);
             continue;
         }
-        bc = cv_append_str(info.debug_symline,
+        bc = cv_append_str(info->debug_symline,
                            dbgfmt_cv->filenames[i].pathname);
         dbgfmt_cv->filenames[i].str_off = off;
         off += bc->len;
     }
-    cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
+    cv8_set_symhead_end(head, yasm_section_bcs_last(info->debug_symline));
 
     /* Align 4 */
     bc = yasm_bc_create_align
         (yasm_expr_create_ident(yasm_expr_int(yasm_intnum_create_uint(4)), 0),
          NULL, NULL, NULL, 0);
-    yasm_bc_finalize(bc, yasm_cv__append_bc(info.debug_symline, bc));
+    yasm_bc_finalize(bc, yasm_cv__append_bc(info->debug_symline, bc));
     yasm_bc_calc_len(bc, NULL, NULL);
 
     /* source file info table */
-    head = cv8_add_symhead(info.debug_symline, CV8_FILE_INFO, 0);
+    head = cv8_add_symhead(info->debug_symline, CV8_FILE_INFO, 0);
     off = 0;
     for (i=0; i<dbgfmt_cv->filenames_size; i++) {
         if (!dbgfmt_cv->filenames[i].pathname)
             continue;
-        bc = cv8_add_fileinfo(info.debug_symline, &dbgfmt_cv->filenames[i]);
+        bc = cv8_add_fileinfo(info->debug_symline, &dbgfmt_cv->filenames[i]);
         dbgfmt_cv->filenames[i].info_off = off;
         off += bc->len;
     }
-    cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
+    cv8_set_symhead_end(head, yasm_section_bcs_last(info->debug_symline));
 
     /* Already aligned 4 */
 
     /* Generate line numbers for sections */
-    yasm_object_sections_traverse(object, (void *)&info,
+    yasm_object_sections_traverse(object, (void *)info,
                                   cv_generate_line_section);
 
     /* Output line numbers for sections */
     head = NULL;
-    STAILQ_FOREACH(li, &info.cv8_lineinfos, link) {
+    STAILQ_FOREACH(li, &info->cv8_lineinfos, link) {
         if (li->first_in_sect) {
             if (head)
-                cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
-            head = cv8_add_symhead(info.debug_symline, CV8_LINE_NUMS, 0);
+                cv8_set_symhead_end(head, yasm_section_bcs_last(info->debug_symline));
+            head = cv8_add_symhead(info->debug_symline, CV8_LINE_NUMS, 0);
         }
         bc = yasm_bc_create_common(&cv8_lineinfo_bc_callback, li, 0);
         bc->len = (li->first_in_sect ? 24 : 12) + li->num_linenums*8;
-        yasm_cv__append_bc(info.debug_symline, bc);
+        yasm_cv__append_bc(info->debug_symline, bc);
     }
     if (head)
-        cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
+        cv8_set_symhead_end(head, yasm_section_bcs_last(info->debug_symline));
 
     /* Already aligned 4 */
 
     /* Output debugging symbols */
-    head = cv8_add_symhead(info.debug_symline, CV8_DEBUG_SYMS, 0);
+    head = cv8_add_symhead(info->debug_symline, CV8_DEBUG_SYMS, 0);
     /* add object and compile flag first */
-    cv8_add_sym_objname(info.debug_symline,
+    cv8_add_sym_objname(info->debug_symline,
                         yasm__abspath(object->obj_filename));
     if (getenv("YASM_TEST_SUITE"))
-        cv8_add_sym_compile(object, info.debug_symline,
+        cv8_add_sym_compile(object, info->debug_symline,
                             yasm__xstrdup("yasm HEAD"));
     else
-        cv8_add_sym_compile(object, info.debug_symline,
+        cv8_add_sym_compile(object, info->debug_symline,
                             yasm__xstrdup(PACKAGE_STRING));
     /* then iterate through symbol table */
     yasm_symtab_traverse(object->symtab, &info, cv_generate_sym);
-    cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
+    cv8_set_symhead_end(head, yasm_section_bcs_last(info->debug_symline));
 
     /* Align 4 at end */
     bc = yasm_bc_create_align
         (yasm_expr_create_ident(yasm_expr_int(yasm_intnum_create_uint(4)), 0),
          NULL, NULL, NULL, 0);
-    yasm_bc_finalize(bc, yasm_cv__append_bc(info.debug_symline, bc));
+    yasm_bc_finalize(bc, yasm_cv__append_bc(info->debug_symline, bc));
     yasm_bc_calc_len(bc, NULL, NULL);
 
-    return info.debug_symline;
+    return info->debug_symline;
 }
 
 static void

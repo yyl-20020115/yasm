@@ -94,7 +94,7 @@ int mbo_getopt(int argc, char* const *argv, const mbo_opt_struct opts[], char **
 
 		optchr = 0;
 		dash = 1;
-		arg_start = 2 + strlen(opts[opts_idx].opt_name);
+		arg_start = 2 + (int)strlen(opts[opts_idx].opt_name);
 	}
 
 	if (!dash)

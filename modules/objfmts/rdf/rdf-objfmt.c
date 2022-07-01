@@ -851,7 +851,8 @@ static int
 rdf_helper_set_type(void *obj, yasm_valparam *vp, unsigned long line,
                     void *d, uintptr_t newtype)
 {
-    unsigned int *type = (unsigned int *)d;
+    //NOTICE:uint->uintptr_t
+    uintptr_t*type = (uintptr_t*)d;
     *type = newtype;
     return 0;
 }

@@ -293,7 +293,7 @@ yasm_intnum_create_charconst_tasm(const char *str)
         default:
             /* >=32 bit conversion */
             while (i < len) {
-                BitVector_Chunk_Store(conv_bv, 8, (len-i-1)*8,
+                BitVector_Chunk_Store(conv_bv, 8, (N_int)(len-i-1)*8,
                                       ((unsigned long)str[i]) & 0xff);
                 i++;
             }

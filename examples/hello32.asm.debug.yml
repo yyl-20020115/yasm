@@ -1,0 +1,25 @@
+info:
+  creator: "YASM 1.0.0"
+  version: "1.0.0"
+  source: "hello32.asm"
+  output: "hello32.obj"
+  language: "ASM"
+source-files:
+  - name: C:\Working\yasm\examples\hello32.asm
+    line-count: 7
+    first-line: 1
+    locations:
+      - file-offset: 0x00000000
+        line-number: 6
+      - file-offset: 0x00000005
+        line-number: 7
+      - file-offset: 0x0000000A
+        line-number: 8
+      - file-offset: 0x0000000F
+        line-number: 9
+      - file-offset: 0x00000014
+        line-number: 10
+      - file-offset: 0x00000016
+        line-number: 11
+      - file-offset: 0x0000001B
+        line-number: 12

@@ -136,7 +136,7 @@ DFA_new(Ins *ins, unsigned int ni, unsigned int lb, unsigned int ub, Char *rep)
     d->head = NULL;
     d->nStates = 0;
     d->toDo = NULL;
-    DFA_findState(d, work, closure(work, &ins[0]) - work);
+    DFA_findState(d, work, (unsigned int)(closure(work, &ins[0]) - work));
     while(d->toDo){
 	State *s = d->toDo;
 
@@ -151,7 +151,7 @@ DFA_new(Ins *ins, unsigned int ni, unsigned int lb, unsigned int ub, Char *rep)
 		Ins *j2;
 		for(j2 = i + 1; j2 < (Ins*) i->i.link; ++j2){
 		    if(!(j2->c.link = goTo[j2->c.value - lb].to))
-			goTo[nGoTos++].ch = j2->c.value;
+			goTo[nGoTos++].ch = (Char)j2->c.value;
 		    goTo[j2->c.value - lb].to = j2;
 		}
 	    } else if(i->i.tag == TERM){
@@ -165,7 +165,7 @@ DFA_new(Ins *ins, unsigned int ni, unsigned int lb, unsigned int ub, Char *rep)
 	    i = (Ins*) go->to;
 	    for(cP = work; i; i = (Ins*) i->c.link)
 		cP = closure(cP, i + i->c.bump);
-	    go->to = DFA_findState(d, work, cP - work);
+	    go->to = DFA_findState(d, work, (unsigned int)(cP - work));
 	}
 
 	s->go.nSpans = 0;
@@ -224,7 +224,7 @@ State *DFA_findState(DFA *d, Ins **kernel, unsigned int kCount){
 	     unmark(i);
 	}
     }
-    kCount = cP - kernel;
+    kCount = (unsigned int)(cP - kernel);
     kernel[kCount] = NULL;
 
     for(s = d->head; s; s = s->next){

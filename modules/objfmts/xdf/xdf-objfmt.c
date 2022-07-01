@@ -641,7 +641,8 @@ xdf_helper_use(void *obj, yasm_valparam *vp, unsigned long line, void *d,
                uintptr_t bits)
 {
     yasm_object *object = (yasm_object *)obj;
-    unsigned long *flags = (unsigned long *)d;
+    //unsigned long* flags = (unsigned long*)d;
+    uintptr_t* flags = (uintptr_t*)d;
     *flags &= ~(XDF_SECT_USE_16|XDF_SECT_USE_32|XDF_SECT_USE_64);
     switch (bits) {
         case 16: *flags |= XDF_SECT_USE_16; break;

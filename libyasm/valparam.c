@@ -296,7 +296,7 @@ int
 yasm_dir_helper_flag_set(void *obj, yasm_valparam *vp, unsigned long line,
                          void *d, uintptr_t flag)
 {
-    unsigned long *flags = (unsigned long *)d;
+    uintptr_t*flags = (uintptr_t*)d;
     *flags = flag;
     return 0;
 }

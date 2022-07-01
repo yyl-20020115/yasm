@@ -27,11 +27,11 @@
 #include <util.h>
 
 #include <libyasm.h>
-
+#include <libyasm\coretype.h>
 #include "cv-dbgfmt.h"
 
 yasm_dbgfmt_module yasm_cv8_LTX_dbgfmt;
-
+int dump_yaml_debug = 0;
 
 static /*@null@*/ /*@only@*/ yasm_dbgfmt *
 cv_dbgfmt_create(yasm_object *object, yasm_dbgfmt_module *module, int version)
@@ -89,12 +89,84 @@ yasm_cv__append_bc(yasm_section *sect, yasm_bytecode *bc)
     yasm_section_bcs_append(sect, bc);
     return precbc;
 }
+static char* filename_append_extension(const char* inname, const char* extension)
+{
+    size_t elen = strlen(extension);
+    size_t baselen = strlen(inname);
+
+    char* p = yasm_xmalloc(baselen + elen + 1);
+    if (p != 0) 
+    {
+        memcpy(p, inname, baselen);
+        memcpy(p + baselen, extension, elen + 1);
+    }
+
+    return p;
+}
+
+static void dump_debug_yaml(cv_line_info* info)
+{
+    for (size_t i = 0; i < info->dbgfmt_cv->filenames_size; i++) 
+    {
+        char* outname = info->dbgfmt_cv->filenames[i].pathname;
+        char* shortname = info->dbgfmt_cv->filenames[i].filename;
+        char* yaml_dump_file = filename_append_extension(
+            outname, ".debug.yml");
+        if (0 != yaml_dump_file) {
+            FILE* fp = 0;
+            if (0 != (fp = fopen(yaml_dump_file, "w"))) {
+                //int win64 = 1;
+                fprintf(fp, "info:\n");
+                fprintf(fp, "  creator: \"%s\"\n", "YASM 1.0.0" );
+                fprintf(fp, "  version: \"%d.%d.%d\"\n", 1, 0, 0);
+                fprintf(fp, "  source: \"%s\"\n", info->debug_symline->object->src_filename);
+                fprintf(fp, "  output: \"%s\"\n", info->debug_symline->object->obj_filename);
+                fprintf(fp, "  language: \"%s\"\n", "ASM");
+                //if (win64)
+                //{
+                //    fprintf(fp, "  machine: 0x00D0\n");
+                //}
+                //else 
+                //{
+                //    fprintf(fp, "  machine: 0x0006\n");
+                //}
+                //if (info->num_lineinfos == 0) {
+                //    info->num_lineinfos = 1;
+                //}
+                cv8_lineinfo* li = info->cv8_lineinfos.stqh_first;
+                if(li!=0)
+                {
+                    cv8_lineset* ls = li->linesets.stqh_first;// +i;
+                    if (ls != 0 && ls->num_pairs>0) {
+                        fprintf(fp, "source-files:\n");
+                        fprintf(fp, "  - name: %s\n", li->fn->pathname);
+                        fprintf(fp, "    line-count: %d\n", li->num_linenums);
+                        fprintf(fp, "    first-line: %d\n", li->first_in_sect);
+                        fprintf(fp, "    locations:\n");
+
+                        for (int j = 0; j < ls->num_pairs; j++) {
+                            cv8_linepair* pair = ls->pairs + j;
+                            fprintf(fp, "      - file-offset: 0x%08X\n", pair->offset);
+                            fprintf(fp, "        line-number: %d\n", (pair->line & ~0x80000000));
+                        }
+                    }
+                }
+                fclose(fp);
+            }
+            yasm_xfree(yaml_dump_file);
+        }
+    }
+}
 
 static void
 cv_dbgfmt_generate(yasm_object *object, yasm_linemap *linemap,
                    yasm_errwarns *errwarns)
 {
-    yasm_cv__generate_symline(object, linemap, errwarns);
+    cv_line_info info = { 0 };
+    yasm_cv__generate_symline(object, linemap, errwarns,&info);
+    if (dump_yaml_debug) {
+        dump_debug_yaml(&info);
+    }
     yasm_cv__generate_type(object);
 }
 
